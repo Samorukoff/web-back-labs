@@ -69,9 +69,18 @@ def counter():
             Дата и время: ''' + str(time) + '''
             <br> Запрошенный адрес: ''' + url + '''
             <br> Ваш IP адрес: ''' + client_ip + '''
+            <br><a href="http://127.0.0.1:5000/counter/clear">Обнулить счетчик</a>
         </body>
     </html>
 '''
+
+@app.route("/counter/clear")
+def clear_count():
+    global count
+    count = 0
+
+    return redirect("/author")
+
 
 @app.route("/info")
 def info():
