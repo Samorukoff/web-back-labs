@@ -3,6 +3,40 @@ from datetime import datetime
 
 app=Flask(__name__)
 
+@app.route("/")
+def title_page():
+
+    lab1 = url_for("start")
+
+    return '''
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+    <header>
+        НГТУ, ФБ, WEB-программирование часть 2
+        <hr>
+    </header>
+    <main>
+        <h1>Лабораторные работы по WEB-программированию</h1>
+
+        <div class="menu"> 
+            <ul>
+                <li><a href="''' + lab1 + '''">Лабораторная работа #1</a></li>
+            </ul>
+        </div>
+    </main>
+    <footer>
+        <hr>
+        &copy;Саморуков Никита, ФБИ-34, 3 курс, 2025
+    </footer>
+</body>
+</html>
+'''
+
 @app.route("/lab1/")
 @app.route("/lab1/web")
 def start():
@@ -57,6 +91,7 @@ def counter():
     time = datetime.today()
     url = request.url
     client_ip = request.remote_addr
+    counter_clear_route = url_for('clear_counter')
 
     count += 1
 
@@ -69,13 +104,13 @@ def counter():
             Дата и время: ''' + str(time) + '''
             <br> Запрошенный адрес: ''' + url + '''
             <br> Ваш IP адрес: ''' + client_ip + '''
-            <br><a href="http://127.0.0.1:5000/lab1/counter/clear">Обнулить счетчик</a>
+            <br><a href="''' +  counter_clear_route + '''">Обнулить счетчик</a>
         </body>
     </html>
 '''
 
 @app.route("/lab1/counter/clear")
-def clear_count():
+def clear_counter():
     global count
     count = 0
 
