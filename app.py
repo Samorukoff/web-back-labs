@@ -109,7 +109,11 @@ def image():
                <h1>Дуб</h1>
                 <img src="''' + path + '''">
            </body>
-        </html>'''
+        </html>''', 200, {
+            'Content-Language': 'ru',
+            'X-Img-Name': 'oak',
+            'X-Hotel': 'Trivago'
+        }
 
 count = 0
 
