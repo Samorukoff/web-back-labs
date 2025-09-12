@@ -41,10 +41,7 @@ def title_page():
 
 @app.route("/lab1/")
 def lab1():
-
-    main_menu = url_for('title_page')
-
-    return '''
+    return f'''
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -60,7 +57,29 @@ def lab1():
         называемых микрофреймворков — минималистичных каркасов
         веб-приложений, сознательно предоставляющих лишь самые ба-
         зовые возможности.</p>
-        <br><a href="''' + main_menu + '''">Назад в главное меню</a>
+
+        <br><a href="{url_for('title_page')}">Назад в главное меню</a>
+
+        <h2>Список роутов</h2>
+
+        <ul>
+            <li><a href="{url_for('start')}">/lab1/web</a></li>
+            <li><a href="{url_for('author')}">/lab1/author</a></li>
+            <li><a href="{url_for('image')}">/lab1/image</a></li>
+            <li><a href="{url_for('counter')}">/lab1/counter</a></li>
+            <li><a href="{url_for('clear_counter')}">/lab1/counter/clear</a></li>
+            <li><a href="{url_for('info')}">lab1/info</a></li>
+            <li><a href="{url_for('created')}">/lab1/create</a></li>
+            <li><a href="{url_for('error_400')}">/lab1/400</a></li>
+            <li><a href="{url_for('error_401')}">/lab1/401</a></li>
+            <li><a href="{url_for('error_402')}">/lab1/402</a></li>
+            <li><a href="{url_for('error_403')}">/lab1/403</a></li>
+            <li><a href="{url_for('error_405')}">/lab1/405</a></li>
+            <li><a href="{url_for('error_418')}">/lab1/418</a></li>
+            <li><a href="{url_for('error_500')}">/lab1/500</a></li>
+            <li><a href="/lab1/aboba">Несуществующая страница</a></li>
+        </ul>
+
     </main>
 </body>
 </html>
