@@ -6,7 +6,7 @@ app=Flask(__name__)
 @app.route("/")
 def title_page():
 
-    lab1 = url_for("start")
+    lab1 = url_for("lab1")
 
     return '''
 <!DOCTYPE html>
@@ -14,6 +14,7 @@ def title_page():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>НГТУ, ФБ, Лабораторные работы</title>
 </head>
 <body>
     <header>
@@ -38,6 +39,32 @@ def title_page():
 '''
 
 @app.route("/lab1/")
+def lab1():
+
+    main_menu = url_for('title_page')
+
+    return '''
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Лабораторная 1</title>
+</head>
+<body>
+    <main>
+        <p>Flask — фреймворк для создания веб-приложений на языке
+        программирования Python, использующий набор инструментов
+        Werkzeug, а также шаблонизатор Jinja2. Относится к категории так
+        называемых микрофреймворков — минималистичных каркасов
+        веб-приложений, сознательно предоставляющих лишь самые ба-
+        зовые возможности.</p>
+        <br><a href="''' + main_menu + '''">Назад в главное меню</a>
+    </main>
+</body>
+</html>
+'''
+
 @app.route("/lab1/web")
 def start():
     return"""<!doctype html>
