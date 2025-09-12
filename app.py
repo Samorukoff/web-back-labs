@@ -41,7 +41,8 @@ def title_page():
 
 @app.route("/lab1/")
 def lab1():
-    return f'''
+    title_page = url_for('title_page')
+    return '''
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -58,25 +59,25 @@ def lab1():
         веб-приложений, сознательно предоставляющих лишь самые ба-
         зовые возможности.</p>
 
-        <br><a href="{url_for('title_page')}">Назад в главное меню</a>
+        <br><a href="''' + title_page + '''">Назад в главное меню</a>
 
         <h2>Список роутов</h2>
 
         <ul>
-            <li><a href="{url_for('start')}">/lab1/web</a></li>
-            <li><a href="{url_for('author')}">/lab1/author</a></li>
-            <li><a href="{url_for('image')}">/lab1/image</a></li>
-            <li><a href="{url_for('counter')}">/lab1/counter</a></li>
-            <li><a href="{url_for('clear_counter')}">/lab1/counter/clear</a></li>
-            <li><a href="{url_for('info')}">lab1/info</a></li>
-            <li><a href="{url_for('created')}">/lab1/create</a></li>
-            <li><a href="{url_for('error_400')}">/lab1/400</a></li>
-            <li><a href="{url_for('error_401')}">/lab1/401</a></li>
-            <li><a href="{url_for('error_402')}">/lab1/402</a></li>
-            <li><a href="{url_for('error_403')}">/lab1/403</a></li>
-            <li><a href="{url_for('error_405')}">/lab1/405</a></li>
-            <li><a href="{url_for('error_418')}">/lab1/418</a></li>
-            <li><a href="{url_for('error_500')}">/lab1/500</a></li>
+            <li><a href="/lab1/web">/lab1/web</a></li>
+            <li><a href="/lab1/author">/lab1/author</a></li>
+            <li><a href="/lab1/image">/lab1/image</a></li>
+            <li><a href="/lab1/counter">/lab1/counter</a></li>
+            <li><a href="/lab1/counter/clear">/lab1/counter/clear</a></li>
+            <li><a href="lab1/info">lab1/info</a></li>
+            <li><a href="/lab1/create">/lab1/create</a></li>
+            <li><a href="/lab1/400">/lab1/400</a></li>
+            <li><a href="/lab1/401">/lab1/401</a></li>
+            <li><a href="/lab1/402">/lab1/402</a></li>
+            <li><a href="/lab1/403">/lab1/403</a></li>
+            <li><a href="/lab1/405">/lab1/405</a></li>
+            <li><a href="/lab1/418">/lab1/418</a></li>
+            <li><a href="/lab1/500">/lab1/500</a></li>
             <li><a href="/lab1/aboba">Несуществующая страница</a></li>
         </ul>
 
@@ -216,8 +217,17 @@ def error_500():
 
     return b/a
 
+logger = []
+
 @app.errorhandler(404)
 def not_found(err):
+    global logger
+    now = datetime.today()
+    logger.append(f"[{now.strftime("%Y-%m-%d %H:%M:%S")} пользователь {request.remote_addr}] перешел по адресу: {request.url}")
+    logs = ""
+    for i in logger:
+        log = f"<li>{i}</li> "
+        logs += log
     return '''
 <!DOCTYPE html>
 <html lang="ru">
@@ -240,6 +250,15 @@ def not_found(err):
             font-size: 40px;
             text-shadow: none;
         }
+        ul {
+            list-style-type: none;
+        }
+        div.logger {
+            position: fixed;
+            bottom: 0px;
+            left: 0px;
+            color: green;
+        }
     
         @keyframes float {
         0%   { transform: translateY(0px); }
@@ -253,6 +272,11 @@ def not_found(err):
     <main>
         <h1>404</h1>
         <h2>Страница по запрашиваемому адресу не найдена</h2>
+        <div class="logger">
+            <ul>
+                ''' + logs + '''
+            </ul>
+        </div>
     </main>
 </body>
 </html>
