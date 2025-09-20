@@ -358,4 +358,5 @@ def example():
     return render_template('example.html', name=name,
                                            group=group,
                                            lab=lab,
-                                           course=course)
+                                           course=course
+                            )
