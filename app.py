@@ -316,3 +316,12 @@ def not_found(err):
 </body>
 </html>
 '''
+
+@app.route('/lab2/a/')
+def a_slash():
+    return 'ok'
+
+@app.route('/lab2/a')
+def a():
+    return 'ok'
+    
