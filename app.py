@@ -3,11 +3,13 @@ from datetime import datetime
 
 from lab1 import lab1
 from lab2 import lab2
+from lab3 import lab3
 
 
 app=Flask(__name__)
 app.register_blueprint(lab1)
 app.register_blueprint(lab2)
+app.register_blueprint(lab3)
 
 
 @app.route("/")
@@ -15,6 +17,7 @@ def title_page():
 
     lab1_url = url_for("lab1.lab")
     lab2_url = url_for("lab2.lab")
+    lab3_url = url_for("lab3.lab")
 
     return '''
 <!DOCTYPE html>
@@ -36,6 +39,7 @@ def title_page():
             <ul>
                 <li><a href="''' + lab1_url + '''">Лабораторная работа #1</a></li>
                 <li><a href="''' + lab2_url + '''">Лабораторная работа #2</a></li>
+                <li><a href="''' + lab3_url + '''">Лабораторная работа #3</a></li>
             </ul>
         </div>
     </main>
