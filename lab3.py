@@ -43,3 +43,35 @@ def form1():
                                               age=age,
                                               sex=sex,
                                               errors=errors)
+
+
+@lab3.route('/lab3/order')
+def order():
+    return render_template('lab3/order.html')
+
+
+@lab3.route('/lab3/pay')
+def pay():
+    price = 0
+    drink = request.args.get('drink')
+    if drink == 'cofee':
+        price = 120
+    elif drink == 'black-tea':
+        price = 80
+    elif drink == 'green-tea':
+        price = 70
+    else:
+        price = 0
+
+    if request.args.get('milk') == 'on':
+        price += 30
+    if request.args.get('sugar') == 'on':
+        price += 10
+
+    return render_template('lab3/pay.html', price=price)
+
+
+@lab3.route('/lab3/success')
+def success():
+    price = request.args.get('price')
+    return render_template('lab3/success.html', price=price)
