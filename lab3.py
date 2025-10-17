@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, make_response, redirect
+from flask import Blueprint, render_template, request, make_response, redirect, url_for
 
 
 lab3 = Blueprint('lab3', __name__)
@@ -173,3 +173,109 @@ def clear_settings():
     resp.delete_cookie('font_style')
     resp.delete_cookie('size')
     return resp
+
+
+products = [
+    {"name": "iPhone 15 Pro", "price": 119000, "brand": "Apple", "color": "Титановый"},
+    {"name": "Samsung Galaxy S24", "price": 89900, "brand": "Samsung", "color": "Черный"},
+    {"name": "Xiaomi 14", "price": 64900, "brand": "Xiaomi", "color": "Зеленый"},
+    {"name": "Google Pixel 8", "price": 75900, "brand": "Google", "color": "Белый"},
+    {"name": "OnePlus 12", "price": 69900, "brand": "OnePlus", "color": "Синий"},
+    {"name": "iPhone 14", "price": 78900, "brand": "Apple", "color": "Фиолетовый"},
+    {"name": "Samsung Galaxy A54", "price": 34900, "brand": "Samsung", "color": "Серебристый"},
+    {"name": "Xiaomi Redmi Note 13", "price": 25900, "brand": "Xiaomi", "color": "Черный"},
+    {"name": "Realme 11 Pro", "price": 28900, "brand": "Realme", "color": "Золотой"},
+    {"name": "iPhone SE", "price": 45900, "brand": "Apple", "color": "Красный"},
+    {"name": "Samsung Galaxy Z Flip5", "price": 99900, "brand": "Samsung", "color": "Фиолетовый"},
+    {"name": "Google Pixel 7a", "price": 44900, "brand": "Google", "color": "Синий"},
+    {"name": "Xiaomi Poco X6", "price": 29900, "brand": "Xiaomi", "color": "Желтый"},
+    {"name": "Nothing Phone 2", "price": 54900, "brand": "Nothing", "color": "Белый"},
+    {"name": "iPhone 13", "price": 59900, "brand": "Apple", "color": "Розовый"},
+    {"name": "Samsung Galaxy S23 FE", "price": 49900, "brand": "Samsung", "color": "Зеленый"},
+    {"name": "Xiaomi 13T", "price": 47900, "brand": "Xiaomi", "color": "Черный"},
+    {"name": "Motorola Edge 40", "price": 42900, "brand": "Motorola", "color": "Синий"},
+    {"name": "Honor 90", "price": 37900, "brand": "Honor", "color": "Серебристый"},
+    {"name": "Vivo V29", "price": 41900, "brand": "Vivo", "color": "Красный"},
+]
+
+
+@lab3.route('/lab3/products')
+def products_view():
+    # Получаем мин и макс цены из всех товаров
+    min_all = min(p['price'] for p in products)
+    max_all = max(p['price'] for p in products)
+    
+    # Обработка сброса
+    if request.args.get('action') == 'reset':
+        resp = make_response(redirect(url_for('lab3.products_view')))
+        resp.delete_cookie('price_min')
+        resp.delete_cookie('price_max')
+        return resp
+    
+    # Получаем значения из формы или куки
+    min_raw = request.args.get('min', '')
+    max_raw = request.args.get('max', '')
+    
+    if not min_raw and not max_raw:
+        min_raw = request.cookies.get('price_min', '')
+        max_raw = request.cookies.get('price_max', '')
+    
+    # Обрабатываем цены
+    price_min = None
+    price_max = None
+    
+    if min_raw.strip():
+        try:
+            price_min = int(min_raw)
+        except ValueError:
+            price_min = None
+            
+    if max_raw.strip():
+        try:
+            price_max = int(max_raw)
+        except ValueError:
+            price_max = None
+    
+    # Исправляем если min > max
+    if price_min and price_max and price_min > price_max:
+        price_min, price_max = price_max, price_min
+    
+    # Фильтруем товары
+    filtered = []
+    for p in products:
+        if price_min and p['price'] < price_min:
+            continue
+        if price_max and p['price'] > price_max:
+            continue
+        filtered.append(p)
+    
+    # Сохраняем в куки если был поиск
+    if request.args.get('min') is not None or request.args.get('max') is not None:
+        resp = make_response(render_template(
+            'lab3/products.html',
+            items=filtered,
+            count=len(filtered),
+            min_all=min_all,
+            max_all=max_all,
+            value_min='' if price_min is None else price_min,
+            value_max='' if price_max is None else price_max
+        ))
+        if price_min is None:
+            resp.delete_cookie('price_min')
+        else:
+            resp.set_cookie('price_min', str(price_min))
+        if price_max is None:
+            resp.delete_cookie('price_max')
+        else:
+            resp.set_cookie('price_max', str(price_max))
+        return resp
+    
+    return render_template(
+        'lab3/products.html',
+        items=filtered if (price_min or price_max) else products,
+        count=len(filtered) if (price_min or price_max) else len(products),
+        min_all=min_all,
+        max_all=max_all,
+        value_min='' if price_min is None else price_min,
+        value_max='' if price_max is None else price_max
+    )
