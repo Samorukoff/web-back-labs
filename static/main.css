@@ -81,8 +81,16 @@ form input[type="radio"] {
     margin-right: 8px;
 }
 
+form input[type="date"] {
+    margin: 10px 0;
+}
+
 form label {
     display: block;
     margin: 8px 0;
     padding: 5px;
+}
+
+form select {
+    margin: 10px 0;
 }

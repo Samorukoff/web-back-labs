@@ -102,3 +102,64 @@ def settings():
                                          background_color=background_color,
                                          font_style=font_style))
     return resp
+
+
+@lab3.route('/lab3/ticket')
+def ticket():
+    # Если форма не отправлена - показываем пустую форму
+    if not request.args:
+        return render_template('lab3/ticket_buy.html')
+
+    # Берем данные из формы
+    fio = request.args.get('fio')
+    berth = request.args.get('berth')
+    age = request.args.get('age')
+    from_city = request.args.get('from_city')
+    to_city = request.args.get('to_city')
+    date = request.args.get('date')
+    
+    # Проверяем чекбоксы
+    linen = request.args.get('linen') == 'on'
+    baggage = request.args.get('baggage') == 'on'
+    insurance = request.args.get('insurance') == 'on'
+
+    # Проверяем что все поля заполнены
+    if not all([fio, berth, age, from_city, to_city, date]):
+        return "Все поля должны быть заполнены!", 400
+
+    # Проверяем возраст
+    try:
+        age_int = int(age)
+        if not (1 <= age_int <= 120):
+            return "Возраст должен быть от 1 до 120 лет!", 400
+    except ValueError:
+        return "Возраст должен быть числом!", 400
+
+    # Расчет цены
+    is_child = age_int < 18
+    price = 700 if is_child else 1000
+    
+    if berth in ['нижняя', 'нижняя боковая']:
+        price += 100
+    
+    if linen:
+        price += 75
+    if baggage:
+        price += 250
+    if insurance:
+        price += 150
+
+    return render_template(
+        'lab3/ticket_result.html',
+        fio=fio,
+        berth=berth,
+        linen=linen,
+        baggage=baggage,
+        age=age_int,
+        from_city=from_city,
+        to_city=to_city,
+        date=date,
+        insurance=insurance,
+        is_child=is_child,
+        price=price
+    )
