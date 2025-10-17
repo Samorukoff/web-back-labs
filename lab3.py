@@ -163,3 +163,13 @@ def ticket():
         is_child=is_child,
         price=price
     )
+
+
+@lab3.route('/lab3/clear_settings')
+def clear_settings():
+    resp = make_response(redirect('/lab3/settings'))
+    resp.delete_cookie('color')
+    resp.delete_cookie('background_color')
+    resp.delete_cookie('font_style')
+    resp.delete_cookie('size')
+    return resp
