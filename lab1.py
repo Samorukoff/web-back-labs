@@ -34,7 +34,7 @@ def lab():
             <li><a href="/lab1/image">/lab1/image</a></li>
             <li><a href="/lab1/counter">/lab1/counter</a></li>
             <li><a href="/lab1/counter/clear">/lab1/counter/clear</a></li>
-            <li><a href="lab1/info">lab1/info</a></li>
+            <li><a href="/lab1/info">/lab1/info</a></li>
             <li><a href="/lab1/create">/lab1/create</a></li>
             <li><a href="/lab1/400">/lab1/400</a></li>
             <li><a href="/lab1/401">/lab1/401</a></li>
@@ -85,8 +85,8 @@ def author():
 @lab1.route("/lab1/image")
 def image():
 
-    path = url_for("static", filename = "oak.jpg")
-    style = url_for("static", filename = "lab1.css")
+    path = url_for("static", filename = "lab1/oak.jpg")
+    style = url_for("static", filename = "lab1/lab1.css")
 
     return'''<!doctype html>
         <html>
@@ -111,7 +111,7 @@ def counter():
     time = datetime.today()
     url = request.url
     client_ip = request.remote_addr
-    counter_clear_route = url_for('clear_counter')
+    counter_clear_route = url_for('lab1.clear_counter')
 
     count += 1
 

@@ -1,7 +1,7 @@
 from flask import Blueprint, url_for, redirect, abort, render_template
 
-from static.book_list import books
-from static.flowers_list import flowers
+from static.lab2.book_list import books
+from static.lab2.flowers_list import flowers
 
 
 lab2 = Blueprint('lab2', __name__)
@@ -26,7 +26,7 @@ def flower_details(flower_id):
     if flower_id < 0 or flower_id >= len(flower_list):
         abort(404)
     else:
-        return render_template('flower_info.html',
+        return render_template('lab2/flower_info.html',
                                 flower=flower_list[flower_id])
 
 
@@ -35,20 +35,20 @@ def flower_details(flower_id):
 def add_flower(name=None, price=0):
     if name:
         flower_list.append({'name': name, 'price': price})
-        return render_template('flower_result.html', name=name, price=price, flower_list=flower_list, error=False)
+        return render_template('lab2/flower_result.html', name=name, price=price, flower_list=flower_list, error=False)
     else:
-        return render_template('flower_result.html', message="Вы не задали имя цветка", error=True), 400
+        return render_template('lab2/flower_result.html', message="Вы не задали имя цветка", error=True), 400
 
 
 @lab2.route('/lab2/flowers')
 def list_flowers():
-    return render_template('flower_all.html', flower_list=flower_list)
+    return render_template('lab2/flower_all.html', flower_list=flower_list)
 
 
 @lab2.route('/lab2/flowers/clear')
 def clear_flowers():
     flower_list.clear()
-    return render_template('flower_clear.html')
+    return render_template('lab2/flower_clear.html')
 
 
 @lab2.route('/lab2/flowers/delete/<int:flower_id>')
@@ -56,7 +56,7 @@ def del_flower(flower_id):
     if flower_id < 0 or flower_id >= len(flower_list):
         abort(404)
     del flower_list[flower_id]
-    return redirect(url_for('list_flowers'))
+    return redirect(url_for('lab2.list_flowers'))
 
 
 @lab2.route('/lab2/example')
@@ -70,7 +70,7 @@ def example():
               {'name': 'бананы', 'price': 200}, 
               {'name': 'абрикосы', 'price': 200},
               {'name': 'манго', 'price': 300}]
-    return render_template('example.html', name=name,
+    return render_template('lab2/example.html', name=name,
                                            group=group,
                                            lab=lab,
                                            course=course,
@@ -80,13 +80,13 @@ def example():
 
 @lab2.route('/lab2/')
 def lab():
-    return render_template('lab2.html')
+    return render_template('lab2/lab2.html')
 
 
 @lab2.route('/lab2/filters')
 def filters():
     phrase = 'О <b>сколько</b> <u>нам</u> <i>открытий</i> чудных...'
-    return render_template('filter.html',
+    return render_template('lab2/filter.html',
                            phrase=phrase)
 
 
@@ -120,10 +120,10 @@ def calc_missing(a):
 
 @lab2.route('/lab2/books')
 def book_list():
-    return render_template('books.html',
+    return render_template('lab2/books.html',
                            books=books)
 
 
 @lab2.route('/lab2/tsvetochki')
 def show_berries():
-    return render_template('tsvetochki.html', items=flowers)
+    return render_template('lab2/tsvetochki.html', items=flowers)
