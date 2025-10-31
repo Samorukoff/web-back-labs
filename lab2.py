@@ -117,7 +117,6 @@ def calc_missing(a):
     return redirect(f'/lab2/calc/{a}/1')
 
 
-
 @lab2.route('/lab2/books')
 def book_list():
     return render_template('lab2/books.html',
