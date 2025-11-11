@@ -19,7 +19,7 @@ def db_connect():
         user='nikita_somoukoff_knowledge_base',
         password='simple_pass_123'
     )
-    cur = conn.cursor()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     return conn, cur
 
