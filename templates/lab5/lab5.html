@@ -12,7 +12,7 @@
         display: flex;
         justify-content: center;
         gap: 10px;
-        margin: 20px 15% 20px 15%;
+        margin: 20px;
         flex-wrap: wrap;
         background-color: white;
     }
@@ -39,17 +39,24 @@
         border: none;
         border-radius: 3px;
         margin: 10px 5px;
+        text-decoration: none;
     }
 
+    .username-placeholder:hover {
+        background: rgb(208, 132, 243);
+    }
+
+    
     </style>
 
     <h1>База знаний</h1>
     <div class="nav-container">
         <a href="/lab5/login" class="nav-button">Вход</a>
         <a href="/lab5/register" class="nav-button">Регистрация</a>
+        <a href="/lab5/users" class="nav-button">Список пользователей</a>
         <a href="/lab5/list" class="nav-button">Список статей</a>
         <a href="/lab5/create" class="nav-button">Создать статью</a>
-        <p class="username-placeholder">👤 {% if not login %}Anonymous{% else %}{{ login }}{% endif %}</p>
+        <a href="/lab5/profile" class="username-placeholder">👤 {% if not login %}Anonymous{% else %}{{ name }}{% endif %}</a>
         <a href="/lab5/logout" class="nav-button" style="background: rgb(231, 46, 46); {% if not login %}display: none{% endif %}">Выйти</a>
     </div>
 {% endblock %}
