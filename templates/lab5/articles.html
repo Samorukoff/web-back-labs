@@ -71,13 +71,13 @@
             {% for article in articles %}
                 <div class="article">
                     <h2>{{ article['title'] }}</h2>
-                    {% if not article.get('is_own', true) %}
+                    {% if not article['is_own'] %}
                         <p style="color: #666; font-style: italic;">📖 Публичная статья другого пользователя</p>
                     {% endif %}
                     <blockquote>{{ article['article_text'] }}</blockquote>
                     
                     <div class="article-actions">
-                        {% if login and article.get('is_own', true) %}
+                        {% if login and article['is_own'] %}
                             <!-- Для своих статей - полный набор кнопок -->
                             <form action="/lab5/edit/{{ article['id'] }}" method="GET" style="all: unset; display: inline;">
                                 <button type="submit" class="btn-edit">✏️</button>
@@ -106,7 +106,7 @@
                             <form action="/lab5/delete/{{ article['id'] }}" method="POST" style="all: unset; display: inline;">
                                 <button type="submit" class="btn-delete" onclick="return confirm('Удалить статью?')">🗑️</button>
                             </form>
-                        {% elif login and not article.get('is_own', true) %}
+                        {% elif login and not article['is_own'] %}
                             <!-- Для чужих публичных статей - только избранное -->
                             {% if article['is_favorite'] %}
                                 <form action="/lab5/unfavorite/{{ article['id'] }}" method="POST" style="all: unset; display: inline;">

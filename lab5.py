@@ -174,9 +174,10 @@ def list():
             """, (user_id, user_id))
         else:
             cur.execute("""
-                (SELECT *, 1 as is_own FROM articles WHERE login_id = ?)
-                UNION ALL
-                (SELECT *, 0 as is_own FROM articles WHERE login_id != ? AND is_public = 1)
+                SELECT *, 
+                    (login_id = ?) as is_own 
+                FROM articles 
+                WHERE login_id = ? OR is_public = 1
                 ORDER BY is_own DESC, is_favorite DESC, id DESC;
             """, (user_id, user_id))
     else:
