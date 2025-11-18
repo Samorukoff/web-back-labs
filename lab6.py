@@ -10,14 +10,34 @@ import numpy as np
 lab6 = Blueprint('lab6', __name__)
 
 
-offices = []
-for i in range (1, 11):
-    offices.append({'number': i, 'tenant': '', "price": round(np.random.rand() * 1000)})
-
-
 @lab6.route('/lab6/')
 def lab():
     return render_template('lab6/lab6.html')
+
+
+def db_connect():
+    if current_app.config['DB_TYPE'] == 'postgres':
+        conn = psycopg2.connect(
+            host = '127.0.0.1',
+            database = 'knowledge_base_db',
+            user='nikita_somoukoff_knowledge_base',
+            password='simple_pass_123'
+        )
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+    else:
+        dir_path = path.dirname(path.realpath(__file__))
+        db_path = path.join(dir_path, "database.db")
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+
+    return conn, cur
+
+
+def db_close(conn, cur):
+    conn.commit()
+    cur.close()
+    conn.close()
 
 
 @lab6.route('/lab6/json-rpc-api/', methods=['POST'])
@@ -25,6 +45,11 @@ def api():
     data=request.json
     id = data['id']
     if data['method'] == 'info':
+        conn, cur = db_connect()
+        cur.execute(f"SELECT * FROM offices")
+        offices = cur.fetchall()
+
+        db_close(conn, cur)
         return {
             'jsonrpc': '2.0',
             'result': offices,
@@ -44,6 +69,13 @@ def api():
     
     if data['method'] == 'booking':
         office_number = data['params']
+
+        conn, cur = db_connect()
+        cur.execute(f"SELECT * FROM offices")
+        offices = cur.fetchall()
+
+        db_close(conn, cur)
+
         for office in offices:
             if office['number'] == office_number:
                 if office['tenant'] != '':
@@ -55,8 +87,15 @@ def api():
                         },
                         'id': id
                     }
-                    
-                office['tenant'] = login
+                
+                conn, cur = db_connect()
+                if current_app.config['DB_TYPE'] == 'postgres':
+                    cur.execute("UPDATE offices SET tenant = %s WHERE number = %s", (login, office_number))
+                else:
+                    cur.execute("UPDATE offices SET tenant = ? WHERE number = ?", (login, office_number))
+                conn.commit()
+                db_close(conn, cur)
+
                 return {
                     'jsonrpc': '2.0',
                     'result': 'success',
@@ -65,10 +104,25 @@ def api():
 
     if data['method'] == 'cancellation':
         office_number = data['params']
+
+        conn, cur = db_connect()
+        cur.execute(f"SELECT * FROM offices")
+        offices = cur.fetchall()
+
+        db_close(conn, cur)
+
         for office in offices:
             if office['number'] == office_number:
                 if office['tenant'] == login:
-                    office['tenant'] = ''
+
+                    conn, cur = db_connect()
+                    if current_app.config['DB_TYPE'] == 'postgres':
+                        cur.execute("UPDATE offices SET tenant = '' WHERE number = %s", (office_number, ))
+                    else:
+                        cur.execute("UPDATE offices SET tenant = '' WHERE number = ?", (office_number, ))
+                    conn.commit()
+                    db_close(conn, cur)
+
                     return {
                         'jsonrpc': '2.0',
                         'result': 'Booking canceled successfully',
