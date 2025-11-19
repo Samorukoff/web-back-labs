@@ -46,13 +46,16 @@ def api():
     id = data['id']
     if data['method'] == 'info':
         conn, cur = db_connect()
-        cur.execute(f"SELECT * FROM offices")
+        cur.execute("SELECT * FROM offices ORDER BY number")
         offices = cur.fetchall()
 
+        offices_list = [dict(office) for office in offices]
+
         db_close(conn, cur)
+
         return {
             'jsonrpc': '2.0',
-            'result': offices,
+            'result': offices_list,
             'id': id
         }
 
@@ -71,12 +74,14 @@ def api():
         office_number = data['params']
 
         conn, cur = db_connect()
-        cur.execute(f"SELECT * FROM offices")
+        cur.execute("SELECT * FROM offices ORDER BY number")
         offices = cur.fetchall()
+
+        offices_list = [dict(office) for office in offices]
 
         db_close(conn, cur)
 
-        for office in offices:
+        for office in offices_list:
             if office['number'] == office_number:
                 if office['tenant'] != '':
                     return {
@@ -106,12 +111,14 @@ def api():
         office_number = data['params']
 
         conn, cur = db_connect()
-        cur.execute(f"SELECT * FROM offices")
+        cur.execute("SELECT * FROM offices ORDER BY number")
         offices = cur.fetchall()
+
+        offices_list = [dict(office) for office in offices]
 
         db_close(conn, cur)
 
-        for office in offices:
+        for office in offices_list:
             if office['number'] == office_number:
                 if office['tenant'] == login:
 
