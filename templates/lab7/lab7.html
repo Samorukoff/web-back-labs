@@ -19,6 +19,9 @@
         position: absolute;
         padding: 20px;
     }
+    .error-mesage {
+        color: red
+    }
 </style>
 {% endblock %}
 
@@ -66,6 +69,7 @@
         <br><label>
             Описание:
             <br><textarea id="description"></textarea>
+            <div id="description-error" class="error-mesage"></div>
         </label><br>
 
         <button onclick="sendFilm()">ОК</button>

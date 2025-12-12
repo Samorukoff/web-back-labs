@@ -80,6 +80,10 @@ def del_film(id):
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['PUT'])
 def put_film(id):
     film = request.get_json()
+
+    if not film.get('description') or film['description'].strip() == '':
+        return {"description": "Описание не может быть пустым"}, 400
+
     films[id] = film
     if id <0 or id > (len(films) - 1):
         abort(404)
@@ -90,6 +94,10 @@ def add_film():
     film = request.get_json()
     if not film:
         abort(400, description="No data provided")
+    
+    if not film.get('description') or film['description'].strip() == '':
+        return {"description": "Описание не может быть пустым"}, 400
+
     films.append(film)
     return {"id": len(films) - 1}, 201
 
