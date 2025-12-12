@@ -1,112 +1,263 @@
-from flask import Blueprint, render_template, request, abort, jsonify
+from flask import Blueprint, render_template, request, abort, jsonify, current_app
+from datetime import datetime
+import psycopg2
+from psycopg2.extras import RealDictCursor
+import sqlite3
+from os import path
 
 lab7 = Blueprint('lab7', __name__)
+
+def db_connect():
+    if current_app.config['DB_TYPE'] == 'postgres':
+        conn = psycopg2.connect(
+            host = '127.0.0.1',
+            database = 'knowledge_base_db',
+            user='nikita_somoukoff_knowledge_base',
+            password='simple_pass_123'
+        )
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+    else:
+        dir_path = path.dirname(path.realpath(__file__))
+        db_path = path.join(dir_path, "database.db")
+        conn = sqlite3.connect(db_path)
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+    
+    return conn, cur
+
+def db_close(conn, cur):
+    """Закрытие соединения с базой данных"""
+    conn.commit()
+    cur.close()
+    conn.close()
 
 @lab7.route('/lab7/')
 def lab():
     return render_template('lab7/lab7.html')
 
-films = [
-    {
-        'title': 'Intouchables',
-        'title_ru': '1+1',
-        'year': 2011,
-        'description': 'Пострадав в результате несчастного случая, богатый аристократ Филипп нанимает в помощники человека,\
-который менее всего подходит для этой работы, – молодого жителя предместья Дрисса, только что освободившегося из тюрьмы.\
-Несмотря на то, что Филипп прикован к инвалидному креслу, Дриссу удается привнести в размеренную жизнь аристократа дух приключений.'
-    },
-    {
-        'title': 'Interstellar',
-        'title_ru': 'Интерстеллар',
-        'year': 2014,
-        'description': 'Пострадав в результате несчастного случая, богатый аристократ Филипп нанимает в помощники человека,\
-который менее всего подходит для этой работы, – молодого жителя предместья Дрисса, только что освободившегося из тюрьмы.\
-Несмотря на то, что Филипп прикован к инвалидному креслу, Дриссу удается привнести в размеренную жизнь аристократа дух приключений.'
-    },
-    {
-        'title': 'The Shawshank Redemption',
-        'title_ru': 'Побег из Шоушенка',
-        'year': 1994,
-        'description': 'Бухгалтер Энди Дюфрейн обвинён в убийстве собственной жены и её любовника. Оказавшись в тюрьме под названием Шоушенк,\
-он сталкивается с жестокостью и беззаконием, царящими по обе стороны решётки. Каждый, кто попадает в эти стены, становится их рабом до конца жизни.\
-Но Энди, обладающий живым умом и доброй душой, находит подход как к заключённым, так и к охранникам, добиваясь их особого к себе расположения.'
-    },
-    {
-        'title': 'The Gentlemen',
-        'title_ru': 'Джентельмены',
-        'year': 2019,
-        'description': 'Один ушлый американец ещё со студенческих лет приторговывал наркотиками, а теперь придумал схему нелегального обогащения с использованием\
-поместий обедневшей английской аристократии и очень неплохо на этом разбогател. Другой пронырливый журналист приходит к Рэю, правой руке американца,\
-и предлагает тому купить киносценарий, в котором подробно описаны преступления его босса при участии других представителей лондонского криминального мира —\
-партнёра-еврея, китайской диаспоры, чернокожих спортсменов и даже русского олигарха.'
-    },
-    {
-        'title': 'The Green Mile',
-        'title_ru': 'Зеленая миля',
-        'year': 1999,
-        'description': 'Пол Эджкомб — начальник блока смертников в тюрьме «Холодная гора», каждый из узников которого однажды проходит «зеленую милю» по пути к месту казни.\
-Пол повидал много заключённых и надзирателей за время работы. Однако гигант Джон Коффи, обвинённый в страшном преступлении, стал одним из самых необычных обитателей блока.'
-    },
-    {
-        'title': 'Shutter Island',
-        'title_ru': 'Остров проклятых',
-        'year': 2009,
-        'description': 'Два американских судебных пристава отправляются на один из островов в штате Массачусетс,\
-чтобы расследовать исчезновение пациентки клиники для умалишенных преступников.\
-При проведении расследования им придется столкнуться с паутиной лжи, обрушившимся ураганом и смертельным бунтом обитателей клиники.'
-    }
-]
+
+def validate_film(film):
+    errors = {}
+    
+    if not film.get('title_ru') or film['title_ru'].strip() == '':
+        errors['title_ru'] = 'Русское название не может быть пустым'
+    
+    current_year = datetime.now().year
+    try:
+        year = int(film.get('year', 0))
+        if year < 1895 or year > current_year:
+            errors['year'] = f'Год должен быть в диапазоне от 1895 до {current_year}'
+    except (ValueError, TypeError):
+        errors['year'] = 'Год должен быть числом'
+    
+    description = film.get('description', '').strip()
+    if not description:
+        errors['description'] = 'Описание не может быть пустым'
+    elif len(description) > 2000:
+        errors['description'] = 'Описание не может превышать 2000 символов'
+    
+    return errors
+
 
 @lab7.route('/lab7/rest-api/films/', methods=['GET'])
 def get_films():
-    return jsonify(films)
+    conn, cur = db_connect()
+    
+    try:
+        if current_app.config['DB_TYPE'] == 'postgres':
+            cur.execute("SELECT id, title, title_ru, year, description FROM films ORDER BY id;")
+        else:
+            cur.execute("SELECT id, title, title_ru, year, description FROM films ORDER BY id;")
+        
+        films_data = cur.fetchall()
+        
+        films_list = []
+        for film in films_data:
+            if current_app.config['DB_TYPE'] == 'postgres':
+                films_list.append({
+                    "id": film['id'],
+                    "title": film['title'],
+                    "title_ru": film['title_ru'],
+                    "year": film['year'],
+                    "description": film['description']
+                })
+            else:
+                films_list.append({
+                    "id": film[0],
+                    "title": film[1],
+                    "title_ru": film[2],
+                    "year": film[3],
+                    "description": film[4]
+                })
+        
+        return jsonify(films_list)
+    finally:
+        db_close(conn, cur)
 
 
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['GET'])
 def get_film(id):
-    if id < 0 or id > (len(films) - 1):
-        abort(404)
-    return films[id]
+    conn, cur = db_connect()
+    try:
+        if current_app.config['DB_TYPE'] == 'postgres':
+            cur.execute("SELECT id, title, title_ru, year, description FROM films WHERE id = %s;", (id,))
+        else:
+            cur.execute("SELECT id, title, title_ru, year, description FROM films WHERE id = ?;", (id,))
+        
+        film_data = cur.fetchone()
+        
+        if not film_data:
+            abort(404)
+        
+        if current_app.config['DB_TYPE'] == 'postgres':
+            film = {
+                "id": film_data['id'],
+                "title": film_data['title'],
+                "title_ru": film_data['title_ru'],
+                "year": film_data['year'],
+                "description": film_data['description']
+            }
+        else:
+            film = {
+                "id": film_data[0],
+                "title": film_data[1],
+                "title_ru": film_data[2],
+                "year": film_data[3],
+                "description": film_data[4]
+            }
+        
+        return jsonify(film)
+    finally:
+        db_close(conn, cur)
 
 
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['DELETE'])
 def del_film(id):
-    if id <0 or id > (len(films) - 1):
-        abort(404)
-    del films[id]
-    return '', 204
+    conn, cur = db_connect()
+    
+    try:
+        if current_app.config['DB_TYPE'] == 'postgres':
+            cur.execute("SELECT id FROM films WHERE id = %s;", (id,))
+        else:
+            cur.execute("SELECT id FROM films WHERE id = ?;", (id,))
+        
+        film = cur.fetchone()
+        
+        if not film:
+            abort(404)
+        
+        if current_app.config['DB_TYPE'] == 'postgres':
+            cur.execute("DELETE FROM films WHERE id = %s;", (id,))
+        else:
+            cur.execute("DELETE FROM films WHERE id = ?;", (id,))
+        
+        return '', 204
+    finally:
+        db_close(conn, cur)
 
 
 @lab7.route('/lab7/rest-api/films/<int:id>', methods=['PUT'])
 def put_film(id):
-    film = request.get_json()
+    conn, cur = db_connect()
+    try:
+        if current_app.config['DB_TYPE'] == 'postgres':
+            cur.execute("SELECT id FROM films WHERE id = %s;", (id,))
+        else:
+            cur.execute("SELECT id FROM films WHERE id = ?;", (id,))
+        
+        film_exists = cur.fetchone()
+        
+        if not film_exists:
+            abort(404)
+        
+        film = request.get_json()
+        if not film:
+            abort(400, description="No data provided")
+        
+        errors = validate_film(film)
+        if errors:
+            return jsonify(errors), 400
+        
+        title = film.get('title', '').strip()
+        title_ru = film.get('title_ru', '').strip()
+        if not title and title_ru:
+            title = title_ru
+        
+        if current_app.config['DB_TYPE'] == 'postgres':
+            cur.execute("""
+                UPDATE films 
+                SET title = %s, title_ru = %s, year = %s, description = %s 
+                WHERE id = %s
+                RETURNING id, title, title_ru, year, description;
+            """, (title, title_ru, film['year'], film['description'], id))
+        else:
+            cur.execute("""
+                UPDATE films 
+                SET title = ?, title_ru = ?, year = ?, description = ? 
+                WHERE id = ?
+            """, (title, title_ru, film['year'], film['description'], id))
+        
+        if current_app.config['DB_TYPE'] == 'postgres':
+            updated_film = cur.fetchone()
+            result = {
+                "id": updated_film['id'],
+                "title": updated_film['title'],
+                "title_ru": updated_film['title_ru'],
+                "year": updated_film['year'],
+                "description": updated_film['description']
+            }
+        else:
+            cur.execute("SELECT id, title, title_ru, year, description FROM films WHERE id = ?;", (id,))
+            film_data = cur.fetchone()
+            result = {
+                "id": film_data[0],
+                "title": film_data[1],
+                "title_ru": film_data[2],
+                "year": film_data[3],
+                "description": film_data[4]
+            }
+        
+        return jsonify(result)
+    finally:
+        db_close(conn, cur)
 
-    if id <0 or id > (len(films) - 1):
-        abort(404)
-
-    if not film.get('description') or film['description'].strip() == '':
-        return {"description": "Описание не может быть пустым"}, 400
-
-    if (not film.get('title') or film['title'].strip() == '') and film.get('title_ru'):
-        film['title'] = film['title_ru']
-
-    films[id] = film
-
-    return films[id], 200
 
 @lab7.route('/lab7/rest-api/films/', methods=['POST'])
 def add_film():
-    film = request.get_json()
-    if not film:
-        abort(400, description="No data provided")
-    
-    if not film.get('description') or film['description'].strip() == '':
-        return {"description": "Описание не может быть пустым"}, 400
-
-    if (not film.get('title') or film['title'].strip() == '') and film.get('title_ru'):
-        film['title'] = film['title_ru']
-
-    films.append(film)
-    return {"id": len(films) - 1}, 201
+    conn, cur = db_connect()
+    try:
+        film = request.get_json()
+        if not film:
+            abort(400, description="No data provided")
+        
+        errors = validate_film(film)
+        if errors:
+            return jsonify(errors), 400
+        
+        title = film.get('title', '').strip()
+        title_ru = film.get('title_ru', '').strip()
+        if not title and title_ru:
+            title = title_ru
+        
+        if current_app.config['DB_TYPE'] == 'postgres':
+            cur.execute("""
+                INSERT INTO films (title, title_ru, year, description) 
+                VALUES (%s, %s, %s, %s) 
+                RETURNING id;
+            """, (title, title_ru, film['year'], film['description']))
+        else:
+            cur.execute("""
+                INSERT INTO films (title, title_ru, year, description) 
+                VALUES (?, ?, ?, ?);
+            """, (title, title_ru, film['year'], film['description']))
+        
+        if current_app.config['DB_TYPE'] == 'postgres':
+            new_id = cur.fetchone()['id']
+        else:
+            new_id = cur.lastrowid
+        
+        return {"id": new_id}, 201
+    finally:
+        db_close(conn, cur)
 
     
