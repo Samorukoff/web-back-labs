@@ -4,7 +4,12 @@
 
 {% block main %}
         <h1>Список статей</h1>
-        <ul style="list-style: none;">
+        <form action="/lab8/articles" method="get">
+            <input type="text" name="query" placeholder="Поиск..." value="{{ query }}">
+            <button type="submit">Искать</button>
+        </form>
+        <ul style="list-style: none;
+                   padding: 0;">
             {% for article in articles %}
                 <li>
                     <div style="max-width: 500px;
@@ -22,7 +27,7 @@
                         {% else %}
                             Приватная
                         {% endif %}
-                        {% if article.login_id == current_user.id %}
+                        {% if current_user.is_authenticated and article.login_id == current_user.id %}
                             {% if article.is_favorite %}
                                 <span style="color: red;">★ В избранном</span>
                             {% endif %}
