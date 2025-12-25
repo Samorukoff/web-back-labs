@@ -5,6 +5,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 import sqlite3
 import hashlib
+import math
 
 lab9 = Blueprint('lab9', __name__)
 
@@ -183,17 +184,41 @@ def is_protected_box(box_id):
 @lab9.route('/lab9/')
 def lab():
     if 'box_positions' not in session:
+        # Разделяем область 80x80 на сетку
+        cols = 5  # 5 колонок
+        rows = 2  # 2 строки (5x2=10 ячеек)
+        
+        cell_width = 80 / cols  # 16% ширины
+        cell_height = 80 / rows  # 40% высоты
+        
         positions = []
-        for _ in range(10):
-            for _ in range(100):  
-                left, top = random.randint(0, 75), random.randint(0, 75)
-                if all(abs(left - x) >= 25 or abs(top - y) >= 30 for x, y in positions):
-                    positions.append((left, top))
-                    break
-            else:
+        
+        # Генерируем по порядку, но можно перемешать
+        for row in range(rows):
+            for col in range(cols):
+                # Центр ячейки
+                center_x = col * cell_width + cell_width / 2
+                center_y = row * cell_height + cell_height / 2
+                
+                # Небольшое случайное смещение (±15% от размера ячейки)
+                offset_x = random.randint(-int(cell_width * 0.3), int(cell_width * 0.3))
+                offset_y = random.randint(-int(cell_height * 0.3), int(cell_height * 0.3))
+                
+                # Финальная позиция
+                left = int(center_x + offset_x)
+                top = int(center_y + offset_y)
+                
+                # Ограничиваем в пределах области 0-80
+                left = max(0, min(80, left))
+                top = max(0, min(80, top))
+                
                 positions.append((left, top))
+        
+        # Перемешиваем позиции, чтобы они не шли по порядку
+        random.shuffle(positions)
+        
         session['box_positions'] = positions
-    
+
     # Получаем данные из БД
     boxes = get_all_boxes()
     
@@ -255,7 +280,7 @@ def login():
                     
                     if remember_me:
                         session.permanent = True
-                    return redirect(url_for('lab9.main'))
+                    return redirect(url_for('lab9.lab'))
                 else:
                     error = "Неверный пароль"
             else:
@@ -287,7 +312,7 @@ def register():
                 session.pop('guest_opened_count', None)
                 session['authenticated_opened_count'] = 0
 
-                return redirect(url_for('lab9.main'))
+                return redirect(url_for('lab9.lab'))
             else:
                 error = message
     
@@ -300,7 +325,7 @@ def logout():
     session.pop('user_login', None)
     session.pop('name', None)
     session.pop('authenticated_opened_count', None)
-    return redirect(url_for('lab9.main'))
+    return redirect(url_for('lab9.lab'))
 
 
 
