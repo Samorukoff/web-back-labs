@@ -363,7 +363,7 @@ def get_box_api(box_id):
 def open_box_api(box_id):
     """REST API: открыть коробку"""
     try:
-        if box_id < 0 or box_id >= 10:
+        if box_id < 1 or box_id > 10:
             return jsonify({"error": "Некорректный ID коробки"}), 400
         
         requires_auth = is_protected_box(box_id)
