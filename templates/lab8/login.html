@@ -19,5 +19,11 @@
         {% if error %}
             {{ error }}
         {% endif %}
+        Запомнить меня <input type="checkbox" name="check">
+        <div>
+            {% if error %}
+                <div style="color:red">{{ error }}</div>
+            {% endif %}
+        </div>
     </form>
 {% endblock %}

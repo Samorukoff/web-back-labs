@@ -43,10 +43,11 @@
     </style> 
     <h1>База знаний</h1>
         <div class="nav-container">
-            <a href="/lab8/article_list" class="nav-button">Список статей</a>
+            <a href="/lab8/articles" class="nav-button">Список статей</a>
             <a href="/lab8/create" class="nav-button">Создать статью</a>
             <a href="/lab8/login" class="nav-button">Войти</a>
             <a href="/lab8/register" class="nav-button">Регистрация</a>
+            <a href="/lab8/logout" class="nav-button">Выход</a>
         <div class="username-placeholder">
             {% if current_user.is_authenticated %}
                 {{ current_user.login }}
